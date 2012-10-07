@@ -1,0 +1,41 @@
+Project Flow  and notes from text book....Feel free to make changes and additions!!
+
+Base Functions - 2-input nand, not
+Library -2-input nand, not , 3-input nand, 4-input nand, 2-input xor and more
+User Input - Input Function, Choice of gates from the collection of library gates
+Need to decide the input format
+
+Technology independent optimization - Boolean optimization of input logic expression 
+cost function - area, try to minimize number of product terms, removal of redundancy 
+
+After technology independent optimization, represent the function simply in terms of AND, OR gates. We need to have some restriction on the maximum number of inputs for an AND, OR gate, say 4. Replace each AND, OR gate by its representation(preferably balanced) in terms of base functions. This gives us the subject graph
+
+Pattern Trees - Develop pattern trees for all the gates in library using  base functions. Each gate may have more than one pattern tree. Assign a cost function, say area to each pattern tree, otherwise do it only for each library gate
+
+Once we have subject graph(DAG), to simplify the problem, we partition the graph into trees. In a tree each gate expect the output gate has fan-out 1. We identify gates with multiple fanout and break the graph at the point to form trees. We solve the covering problem for each tree and combine the results to form the final solution.
+
+We use dynamic programming to solve tree covering problem. For each gate we find all possible matches with the gates in library. We start from the inputs and scan the gates in a topological order. A topological order is any order in which no gate precedes one of its fanouts.
+For each gate, we determine the optimum cover of the subtree rooted at the gate
+output. The cost of a  cover is  determined as the  cost of the  match at
+the node, plus the optimum  costs of the  covers of the  nodes  that are inputs to the
+match. The optimum  covers of the primary inputs  have cost 0. Notice the importance of
+proceeding in  topological order: It guarantees that the optimum cost of the inputs is
+known when a match is considered. Once we reach the output, we move back replacing each gate by its optimal representation. 
+
+Notes :  User Programmability, Reliability-Quality of results, more important than execution time 
+Each  input  required by a pattern graph is actually an output of some other pattern graph
+Some nodes that appear in the subject tree may become, in the  final mapped  circuit, internal to a gate.
+For each library gate, there may be many pattern trees, but for the sake of simplicity we may use only the best one, say the balance pattern tree.
+Observe the difference in the notion of base function and library gate.
+
+Technology mapping transforms an abstract representation of a multi-level logic circuit
+into an  interconnection of gates from a library. The Boolean network is first decomposed
+in simple  gates, typically  NANDs and  inverters. The result is  called the subject
+graph.  Matching then identifies all  possible ways in which a gate of the subject graph
+can be implemented by a gate in the library. The best combination of matches is then
+chosen by a dynamic programming approach. Dynamic programming solves exactly
+only the covering part of the problem. Therefore, the results are of good quality, but
+no global optimality is guaranteed.
+
+http://en.wikipedia.org/wiki/GraphML
+http://www.cs.uic.edu/~jlillis/courses/cs594/spring05/blif.pdf
