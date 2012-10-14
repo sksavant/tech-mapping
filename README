@@ -1,8 +1,10 @@
 Technology Mapping : Course Project : EE677
 
 Input format:
+GraphML : graphml format contains nodes and edges of the graph.
 
 Output format:
+
 
 Testing:
 
