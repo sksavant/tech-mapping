@@ -1,0 +1,7 @@
+.model 3inputand
+.inputs a b c
+.outputs d
+.names a b c d
+111 1
+.end
+
