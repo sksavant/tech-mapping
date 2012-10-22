@@ -25,6 +25,7 @@ class TechMapping:
         self._graph_original.clear_vertex(vertex)
         self._graph_original.remove_vertex(vertex)
         self._graph_original.add_vertex(4)
+        self._graph_original.vertex_properties["name"][self._graph_original.vertex(3)]="NAND"
         self._graph_original.add_edge(self._graph_original.vertex(3),self._graph_original.vertex(0))
         self._graph_original.add_edge(self._graph_original.vertex(3),self._graph_original.vertex(1))
         self._graph_original.add_edge(self._graph_original.vertex(4),self._graph_original.vertex(3))
@@ -43,7 +44,7 @@ class TechMapping:
 if __name__=="__main__":
     #do something
     tm = TechMapping()
-    #tm.ConvertInputToBaseGates()
+    tm.ConvertInputToBaseGates()
     graph_draw(tm._graph_original, vertex_text=tm._graph_original.vertex_properties["name"], vertex_font_size=12, output_size=(200,200))
     tm.finalAllocation()
     print "ending"
