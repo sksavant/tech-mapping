@@ -228,7 +228,7 @@ class TechMapping:
 		vpll = gl.vertex_properties["level"]
 		if vpn[v] == vpnl[l.sources[0]]: #the source vertex of the library graph
 			#Got a top level match wtf to do now?
-			# 
+			
 
     def load_library_functions(self):
     	self.library_graphs=[]
@@ -239,7 +239,7 @@ class TechMapping:
     		lib_tm.not_redundancy_removal()
     		lib_tm.do_dfs()
  		self.library_graphs.append(lib_tm)
- 		lib_tm.load_libary_functions()
+ 		# lib_tm.load_library_functions() #The end of universe?
 	# Load and save all the library graphs in the list library_graphs
 
     def finalAllocation(self):
