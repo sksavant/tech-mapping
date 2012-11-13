@@ -1,13 +1,18 @@
 #!/usr/bin/python
 import sys
+#import os
 from graph_tool.all import *
 class TechMapping:
     #define functions
-    def __init__(self):
+    def __init__(self,fn=None):
         #constructor
         #initialise the graph from the graphml file specified in the argument.
         try:
             self._graph_input_file = sys.argv[1] #take the input graph file from the terminal arguments
+            f = self._graph_input_file
+            #if ".blif" in f:
+            #	os.system("../blif2graphml "+f+" >"+f[0:len(f)-5]+".xml")
+            #	f = f[0:len(f)-5]+".xml"
             try:
                 self._graph_original = load_graph(self._graph_input_file) #load the graphml file as a graph object in graph-tool
                 print "intialised well"
@@ -15,8 +20,8 @@ class TechMapping:
                 print "Cannot read the file given:",self._graph_input_file
         except IndexError:
             print "ERROR: Graphml file is not specified"
-
-    
+    	if fn:
+    		self._graph_original = load_graph(fn)
             
     def two_input_and_gate(self, fan_in_vertices, x, i, temp_vertices):
         g= self._graph_original
@@ -131,7 +136,7 @@ class TechMapping:
 		except TypeError:
 			#print "error"
 			pass
-	print "Poora peethre",trv,len(trv)
+	print trv,len(trv)
 	newtrv=[]
 	for vert in trv: # trv is list of vertices(starting) which have double nots
 		#print "name",vp[vert]
@@ -166,7 +171,7 @@ class TechMapping:
 	                	k=1
 	                	break
 
-    def do_bfs(self): #BFS on graph to number the numbers... a number on the node denotes when it should be fucked.
+    def do_dfs(self): #dFS on graph to number the numbers... a number on the node denotes when it should be fucked.
     	g = self._graph_original
     	vprop_dfs = g.new_vertex_property("int")
     	vprop_mark = g.new_vertex_property("bool")
@@ -207,6 +212,36 @@ class TechMapping:
     		vpl[v] = -1 #sentinel value to check that it is not visited
     		vpv[v] = False
 
+    def find_optimal_pattern(self):
+    	#For each vertex in the sorted_list, arise the function optimal_pattern(v) to find the optimal pattern (obviously!)
+    	for v in self.sorted_list:
+		self.optimal_pattern(v)
+
+    def optimal_pattern(self,v):
+    	#Went to vertex v. It is guaranteed that all the inputs to this vertex were already called.
+    	# Algo.: check what? vertex with each pattern rooted at that vertex. 
+	vpn = g.vertex_properties["name"]
+	vpl = g.vertex_properties["level"]
+	for l in self.library_graphs:
+		gl = l._graph_original
+		vpnl = gl.vertex_properties["name"]
+		vpll = gl.vertex_properties["level"]
+		if vpn[v] == vpnl[l.sources[0]]: #the source vertex of the library graph
+			#Got a top level match wtf to do now?
+			# 
+
+    def load_library_functions(self):
+    	self.library_graphs=[]
+    	filenames=["not.xml","2nand.xml","3_in_nand.xml","4_in_nand.xml","2_in_nor.xml","3_in_nor.xml","4_in_nor.xml"]
+ 	for f in filenames:
+ 		lib_tm=TechMapping("library/"+f)
+ 		lib_tm.ConvertInputToBaseGates()
+    		lib_tm.not_redundancy_removal()
+    		lib_tm.do_dfs()
+ 		self.library_graphs.append(lib_tm)
+ 		lib_tm.load_libary_functions()
+	# Load and save all the library graphs in the list library_graphs
+
     def finalAllocation(self):
          #To print the final allocation of the logic elements
          print "The final gate implementation of the logic circuit is :"
@@ -228,7 +263,9 @@ if __name__=="__main__":
     tm = TechMapping()
     tm.ConvertInputToBaseGates()
     tm.not_redundancy_removal()
-    tm.do_bfs()
-    graph_draw(tm._graph_original, vertex_fill_color="#729fcf", vertex_text=tm._graph_original.vertex_properties["level"], vertex_font_size=10, output_size=(2000,2000))
+    tm.do_dfs()
+    tm.load_library_functions()
+    tm.find_optimal_pattern()
+    graph_draw(tm._graph_original, vertex_fill_color="#729fcf", vertex_text=tm._graph_original.vertex_properties["name"], vertex_font_size=10, output_size=(2000,2000))
     tm.finalAllocation()
     print "ending"
