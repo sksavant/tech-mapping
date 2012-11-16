@@ -48,7 +48,7 @@ class TechMapping:
         g.add_edge(vertex_nand, vertex_not2)
         g.add_edge(vertex_not1, fan_in_vertices[2*x])
         g.add_edge(vertex_not2, fan_in_vertices[2*x+i])
-
+ 
     def balanced_n_input_and_gate(self,vertex):
         g= self._graph_original
         fan_in_vertices = []
@@ -324,6 +324,40 @@ class TechMapping:
         else:
             return [-1,"",-1]
 
+    def replace_optimal_vertices(self):
+        g = self._graph_original
+        vpn = g.vertex_properties["name"]
+        vpc = g.vertex_properties["cost"]
+        vpg = g.vertex_properties["gate"]
+        vpe = g.vertex_properties["edge"]
+        to_remove_vertices=[]
+        self.sorted_list=reversed(self.sorted_list)
+        for v in self.sorted_list:
+            target_vertices=[]
+            if vpg[v]=='3N':
+                for nv in v.out_neighbours():
+                    if g.edge_index[g.edge(v,nv)] == vpe[v]:
+                        to_remove_vertices.append(nv)
+                        for nnv in nv.out_neighbours():
+                            to_remove_vertices.append(nnv)
+                            vpn[nnv]='remove'
+                            vpn[nv]='remove'
+                            vpn[v]='3N'
+                            for nnnv in nnv.out_neighbours():
+                                target_vertices.append(nnnv)
+                for addv in target_vertices:
+                    g.add_edge(v,addv)
+        for v in to_remove_vertices:
+            g.clear_vertex(v)
+        k=1
+        while(k==1):
+            k=0
+            for vertex in g.vertices():
+                if g.vertex_properties["name"][vertex]=="remove":
+                    g.remove_vertex(vertex)
+                    k=1
+                    break
+
     def load_library_functions(self):
         self.library_graphs=[]
         filenames=["not.xml","2nand.xml","3_in_nand.xml","4_in_nand.xml","2_in_nor.xml","3_in_nor.xml","4_in_nor.xml"]
@@ -351,7 +385,6 @@ class TechMapping:
             print vp[v]
         return
 
-
 if __name__=="__main__":
     #do something
     tm = TechMapping()
@@ -360,6 +393,7 @@ if __name__=="__main__":
     tm.do_dfs()
     #tm.load_library_functions()
     tm.find_optimal_pattern()
-    graph_draw(tm._graph_original, vertex_fill_color="#729fcf", vertex_text=tm._graph_original.vertex_properties["edge"], vertex_font_size=10, output_size=(2000,2000))
+    tm.replace_optimal_vertices()
+    graph_draw(tm._graph_original, vertex_fill_color="#729fcf", vertex_text=tm._graph_original.vertex_properties["name"], vertex_font_size=10, output_size=(2000,2000))
     tm.finalAllocation()
     print "ending"
