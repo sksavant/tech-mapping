@@ -254,6 +254,7 @@ class TechMapping:
         costs.append(self.find_3in_nand(v))
         costs.append(self.find_2in_nand(v))
         costs.append(self.find_not(v))
+        costs.append(self.find_4in_nand(v))
         for x in costs:
             if x[0]<0:
                 costs.pop(costs.index(x))
@@ -292,8 +293,28 @@ class TechMapping:
                             edge =  g.edge(v,nv)
                             return [cost+3,'3N',int(g.edge_index[edge])]
                             break
-        return [None,"",-1]
+        return [-1,"",-1]
 
+    def find_4in_nand(self,v):
+        g = self._graph_original
+        vpn = g.vertex_properties["name"]
+        vpc = g.vertex_properties["cost"]
+        vpg = g.vertex_properties["gate"]
+        vpe = g.vertex_properties["edge"]
+        if vpn[v]=='NAND':
+            cost = 0
+            k = 0
+            for nv in v.out_neighbours():
+                if vpn[nv]=='!':
+                    for nnv in nv.out_neighbours():
+                        if vpn[nnv]=='NAND': 
+                            k=k+1
+                            for nnnv in nnv.out_neighbours():
+                                cost = vpc[nnnv]+cost
+                if (k==2) :
+                    return [cost+4,'4N',-1]
+        return [-1,"", -1]
+    
     def find_2in_nand(self,v):
         g = self._graph_original
         vpn = g.vertex_properties["name"]
@@ -332,11 +353,13 @@ class TechMapping:
         vpe = g.vertex_properties["edge"]
         to_remove_vertices=[]
         self.sorted_list=reversed(self.sorted_list)
-        n=0
+        n3inn=0
+        n4inn=0
         for v in self.sorted_list:
             if not v in to_remove_vertices:
                 target_vertices=[]
                 if vpg[v]=='3N':
+                    n3inn=n3inn+1
                     for nv in v.out_neighbours():
                         if g.edge_index[g.edge(v,nv)] == vpe[v]:
                             to_remove_vertices.append(nv)
@@ -345,12 +368,27 @@ class TechMapping:
                                 vpn[nnv]='remove'
                                 vpn[nv]='remove'
                                 vpn[v]='3N'
-                                n=n+1
                                 for nnnv in nnv.out_neighbours():
                                     target_vertices.append(nnnv)
                     for addv in target_vertices:
                         g.add_edge(v,addv)
-        print "Replaced",n,"vertices with 3in nands"
+                elif vpg[v]=='4N':
+                    n4inn=n4inn+1
+                    for nv in v.out_neighbours():
+                        assert(vpn[nv]=="!")
+                        to_remove_vertices.append(nv)
+                        for nnv in nv.out_neighbours():
+                            assert(vpn[nnv]=="NAND")
+                            to_remove_vertices.append(nnv)
+                            vpn[nv]="remove"
+                            vpn[nnv]="remove"
+                            vpn[v]='4N'
+                            for nnnv in nnv.out_neighbours():
+                                target_vertices.append(nnnv)
+                    for addv in target_vertices:
+                        g.add_edge(v,addv)
+        print "Replaced",n3inn,"vertices with 3in nands"
+        print "Replaced",n4inn,"vertices with 4in nands"
         for v in to_remove_vertices:
             g.clear_vertex(v)
         k=1
