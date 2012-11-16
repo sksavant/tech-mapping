@@ -136,7 +136,7 @@ class TechMapping:
             except TypeError:
                 #print "error"
                 pass
-        print trv,len(trv)
+        print "Removing",len(trv),"!! redundancies"
         newtrv=[]
         for vert in trv: # trv is list of vertices(starting) which have double nots
             #print "name",vp[vert]
@@ -259,7 +259,7 @@ class TechMapping:
                 costs.pop(costs.index(x))
         costs = sorted(costs,key=itemgetter(0))
         i=0
-        print costs
+        #print costs
         while(True):
             try:
                 if (costs[i][0]>0):
@@ -283,12 +283,12 @@ class TechMapping:
                             cost = 0
                             for nnnv in nnv.out_neighbours():
                                 cost = vpc[nnnv]+cost
-                                print cost
+                                #print cost
                             for xv in v.out_neighbours():
                                 if xv!=nv:
-                                    print xv,nv
+                                    #print xv,nv
                                     cost = cost + vpc[xv]
-                                    print cost
+                                    #print cost
                             edge =  g.edge(v,nv)
                             return [cost+3,'3N',int(g.edge_index[edge])]
                             break
@@ -332,21 +332,25 @@ class TechMapping:
         vpe = g.vertex_properties["edge"]
         to_remove_vertices=[]
         self.sorted_list=reversed(self.sorted_list)
+        n=0
         for v in self.sorted_list:
-            target_vertices=[]
-            if vpg[v]=='3N':
-                for nv in v.out_neighbours():
-                    if g.edge_index[g.edge(v,nv)] == vpe[v]:
-                        to_remove_vertices.append(nv)
-                        for nnv in nv.out_neighbours():
-                            to_remove_vertices.append(nnv)
-                            vpn[nnv]='remove'
-                            vpn[nv]='remove'
-                            vpn[v]='3N'
-                            for nnnv in nnv.out_neighbours():
-                                target_vertices.append(nnnv)
-                for addv in target_vertices:
-                    g.add_edge(v,addv)
+            if not v in to_remove_vertices:
+                target_vertices=[]
+                if vpg[v]=='3N':
+                    for nv in v.out_neighbours():
+                        if g.edge_index[g.edge(v,nv)] == vpe[v]:
+                            to_remove_vertices.append(nv)
+                            for nnv in nv.out_neighbours():
+                                to_remove_vertices.append(nnv)
+                                vpn[nnv]='remove'
+                                vpn[nv]='remove'
+                                vpn[v]='3N'
+                                n=n+1
+                                for nnnv in nnv.out_neighbours():
+                                    target_vertices.append(nnnv)
+                    for addv in target_vertices:
+                        g.add_edge(v,addv)
+        print "Replaced",n,"vertices with 3in nands"
         for v in to_remove_vertices:
             g.clear_vertex(v)
         k=1
@@ -381,8 +385,8 @@ class TechMapping:
         for v in g.vertices():
             if v.in_degree() is 0:
                 self.sources.append(v)
-        for v in self.sources:
-            print vp[v]
+        #for v in self.sources:
+            #print vp[v]
         return
 
 if __name__=="__main__":
